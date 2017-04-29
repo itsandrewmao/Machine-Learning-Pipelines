@@ -1,20 +1,18 @@
 import numpy as np
 import pandas as pd
 
-def check_missing_value(df):
+def check_miss(df):
     '''
     Prints out the variables that
     have missing values.
     -> so that user can determine which
     method to adopt for filling missing values.
     '''
-    n = len(df.index)
-    for item in df.columns:
-        if df[item].count() < n:
-            print(item+" has missing values.")
+    for varname in df.columns:
+        if any(df[varname].isnull()) == True:
+            print(varname + " has missing values!")
 
-
-def fill_miss(df, var, d, method):
+def fill_miss(df, varname, method):
     '''
     Fill in missing values for a given column in a dataframe
     
@@ -22,34 +20,29 @@ def fill_miss(df, var, d, method):
     return the same dataframe without missing values.
     '''
     
-    name = d['x'+str(var)]
-    
     if method == 'mean':
-        df[name] = df[name].fillna(df[name].mean())
+        df[varname] = df[varname].fillna(df[varname].mean())
     elif method == 'median':
-        df[col] = df[col].fillna(df[col].median())
+        df[varname] = df[varname].fillna(df[varname].median())
     elif method == 'drop' or method == 'zero':
-        df[col] = df[col].fillna(0)
+        df[varname] = df[varname].fillna(0)
     elif method == "ffill" or method == 'forward':
-        df[name] = df[name].ffill()
+        df[varname] = df[varname].ffill()
     elif method == "bfill" or method == 'backward':
-        df[name] = df[name].ffill()
+        df[varname] = df[varname].ffill()
     else:
-        df[name] = df[name].bfill()
+        raise ValueError('{} not currently avaliable'.format(method))
         
-def convert_column_type(df, varname, to_type, value_if_true = None):
+def convert_vartype(df, varname, method):
     
-    if to_type == 'bool':
+    if method == 'bool':
         if len(df[varname].value_counts()) > 2:
             print('Warning, {} has more than 2 values'.format(varname))
     
-        df[varname] = df[varname] == 1
+        df[varname] = df[varname] == 1 
 
-    elif to_type == 'int':
-        missing_df = df[df[varname].isnull()][varname].copy()
-        not_missing_df = df[~df[varname].isnull()][varname].copy()
-        not_missing_df = not_missing_df.astype(int)
-
-        not_missing_df.append(missing_df)
-
-        df[varname] = not_missing_df
+    elif method == 'int':
+        pd.options.display.float_format = '{:,.0f}'.format
+        
+    else:
+        raise ValueError('{} not currently avaliable'.format(method))

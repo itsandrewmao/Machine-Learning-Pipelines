@@ -1,11 +1,29 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-#Explore independent variables
-def create_var_dict(df, i):
+def explore_var(df,var,graph_type):
     '''
-    ***Dependent variable y (binary) takes the i-th
-    column in the DataFrame***
+    Generate distribution graph for specific variable
+    Input:
+        df: pd dataframe
+        variable(string): the variable/attribute you want to explore
+        graph_type(string): the type of graph you want to draw
+    Return:
+        d_var: a dictionary contains distribution for the selected attribute
+        and the corresponding garph and feature list for that attribute. 
+    '''
+    d_var = {}
+    cols = [var, DEP_VAR]
+    var_mean = df[cols].groupby(var).mean()
+    graph = var_mean.plot(kind=graph_type,use_index=False,figsize=(8,4))
+    
+    d_var["distribution"] = var_mean
+    d_var["graph"] = graph
+    
+    return d_var
+
+def gen_vdict(df, label_index):
+    '''
     Prints out the names of independent variables.
     Returns corresponding dictionary.
     '''

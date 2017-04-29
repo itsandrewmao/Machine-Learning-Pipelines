@@ -23,7 +23,7 @@ def display_importance(df, label, features):
     pl.xlabel("Relative Importance")
     pl.title("Variable Importance")
     
-def discretize(df, varname, nbins, cut_type='quantile'):
+def discretize(df, varname, nbins, method='quantile'):
     '''
     Discretizes given "varname" into "nbins".
 
@@ -31,31 +31,28 @@ def discretize(df, varname, nbins, cut_type='quantile'):
             - df: name of pandas DataFrame
             - varname: name of variable to be discretized
             - nbins: number of categories to create
-            - cut_type: can be 'quantile', 'uniform', 'linspace' or 'logspace'
+            - method: can be 'quantile', 'uniform', 'linspace' or 'logspace'
 
     Returns: nothing. Modifies "df" in place
     '''
-    accepted_cut_types = ['quantile', 'uniform', 'linspace', 'logspace']
-
     assert varname in df.columns, "Column '{}' not found in DataFrame".format(varname)
 
     assert len(df[varname].value_counts()) > nbins, "Number of bins too large"
 
-    assert cut_type in accepted_cut_types, "Given cut_type not allowed"
-
-
-    if cut_type == 'quantile':
-        df[varname+'_cat'] = pd.qcut(df[varname], nbins)
-    elif cut_type == 'uniform':
+    if method == 'quantile':
+        df[varname + '_cat'] = pd.qcut(df[varname], nbins)
+    elif method == 'uniform':
         df[varname+'_cat'] = pd.cut(df[varname], nbins)
-    elif cut_type == 'linspace':
+    elif method == 'linspace':
         minval = min(df[varname])
         maxval = max(df[varname])
         bins = np.linspace(minval, maxval, nbins+1)
         df[varname+'_cat'] = pd.cut(df[varname], bins, include_lowest=True)
-    elif cut_type == 'logspace':
+    elif method == 'logspace':
         minval = min(df[varname])
         maxval = max(df[varname])
+    else:
+        raise ValueError('{} not currently avaliable'.format(method))
         
         assert maxval > 0, 'Column {} has only negative or zero numbers'.format(varname)
 
@@ -67,9 +64,39 @@ def discretize(df, varname, nbins, cut_type='quantile'):
         df[varname+'_cat'] = pd.cut(df[varname], bins, include_lowest=True)
 
 
-def gen_dummies(df, col):
+def gen_dummies(df, varnames, drop=True):
     '''
     Given a dataframe and certain column, returns a set of dummies
     '''
-    for i, value in enumerate(df[col].unique()):
-        df[col + '_{}'.format(i)] = df[col] == value
+    for v in varnames:
+        binary_cols = pd.get_dummies(df[v], v)
+        df = pd.merge(df, 
+                      binary_cols, 
+                      left_index=True, 
+                      right_index=True, 
+                      how='inner')
+        ## Carlos' method
+        for i, value in enumerate(df[col].unique()):
+            df[col + '_{}'.format(i)] = df[col] == value
+        ##
+    
+    if drop:
+        df.drop(cat_cols, inplace=True, axis=1)
+
+def binarize_categories(df, cat_cols, drop=True):
+    '''
+    df: a pandas dataframe
+    cat_cols: list of column names to generate indicator columns for
+    drop: a bool. If true, drop the original category columns
+    Returns: the modified dataframe
+    '''
+    for col in cat_cols:
+        binary_cols = pd.get_dummies(df[col], col)
+        df = pd.merge(df, 
+                      binary_cols, 
+                      left_index=True, 
+                      right_index=True, 
+                      how='inner')
+    if drop:
+        df.drop(cat_cols, inplace=True, axis=1)
+    return df
