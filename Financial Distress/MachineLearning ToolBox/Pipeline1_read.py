@@ -18,6 +18,6 @@ def read(file_name):
     elif '.sql' in file_name:
         df = pd.read_sql(file_name)
     else:
-        raise ValueError('{file} is an unsupported file format.'.format(file=file_name))
+        raise ValueError('{} is an unsupported file format.'.format(file_name))
 
     return df      

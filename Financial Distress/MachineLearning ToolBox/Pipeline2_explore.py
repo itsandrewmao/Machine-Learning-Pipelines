@@ -1,7 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import re
 
-def explore_var(df,var,graph_type):
+def explore_var(df,varname,label,method):
     '''
     Generate distribution graph for specific variable
     Input:
@@ -12,15 +13,18 @@ def explore_var(df,var,graph_type):
         d_var: a dictionary contains distribution for the selected attribute
         and the corresponding garph and feature list for that attribute. 
     '''
-    d_var = {}
-    cols = [var, DEP_VAR]
-    var_mean = df[cols].groupby(var).mean()
-    graph = var_mean.plot(kind=graph_type,use_index=False,figsize=(8,4))
+    rv = {}
+    cols = [varname, label]
+    m = df[cols].groupby(varname).mean()
+    clean_name = ' '.join(re.findall(r"[A-Za-z0-9][A-Za-z0-9][^A-Z0-9]*", varname))
     
-    d_var["distribution"] = var_mean
-    d_var["graph"] = graph
+    rv["distribution"] = m
+    rv["graph"] = m.plot(kind=method,
+                         use_index=False,
+                         figsize=(8,4),
+                        title=clean_name)
     
-    return d_var
+    return rv
 
 def gen_vdict(df, label_index):
     '''

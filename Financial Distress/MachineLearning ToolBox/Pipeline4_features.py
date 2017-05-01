@@ -1,8 +1,3 @@
-# 4. Generate Features/Predictors: For this assignment, you should 
-# write one function that can discretize a continuous variable and 
-# one function that can take a categorical variable and create binary/dummy 
-# variables from it. Apply them to at least one variable each in this data.
-    
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import numpy as np
