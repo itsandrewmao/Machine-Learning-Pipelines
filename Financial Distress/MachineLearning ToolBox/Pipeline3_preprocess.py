@@ -8,9 +8,16 @@ def check_miss(df):
     -> so that user can determine which
     method to adopt for filling missing values.
     '''
+    rv = []
     for varname in df.columns:
         if any(df[varname].isnull()) == True:
-            print(varname + " has missing values!")
+            rv.append(varname + " has missing values!")
+    
+    if rv == []:
+        print("No missing values!")
+    else:
+        for x in rv:
+            print(x)
 
 def fill_miss(df, varname, method):
     '''
@@ -19,6 +26,8 @@ def fill_miss(df, varname, method):
     Given a dataframe, specific column, and fill value method, 
     return the same dataframe without missing values.
     '''
+    
+    assert varname in df.columns, "Column '{}' not in DataFrame".format(varname)
     
     if method == 'mean':
         df[varname] = df[varname].fillna(df[varname].mean())
@@ -34,6 +43,8 @@ def fill_miss(df, varname, method):
         raise ValueError('{} not currently avaliable'.format(method))
         
 def convert_vartype(df, varname, method):
+    
+    assert varname in df.columns, "Column '{}' not in DataFrame".format(varname)
     
     if method == 'bool':
         if len(df[varname].value_counts()) > 2:

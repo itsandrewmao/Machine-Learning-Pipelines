@@ -18,7 +18,7 @@ def display_importance(df, label, features):
     pl.xlabel("Relative Importance")
     pl.title("Variable Importance")
     
-def discretize(df, varname, nbins, method='quantile'):
+def discretize(df, varname, nbins, method='ufov'):
     '''
     Discretizes given "varname" into "nbins".
 
@@ -30,13 +30,13 @@ def discretize(df, varname, nbins, method='quantile'):
 
     Returns: nothing. Modifies "df" in place
     '''
-    assert varname in df.columns, "Column '{}' not found in DataFrame".format(varname)
-
+    
+    assert varname in df.columns, "Column '{}' not in DataFrame".format(varname)
     assert len(df[varname].value_counts()) > nbins, "Number of bins too large"
 
-    if method == 'quantile':
+    if method == 'ufov': # Uniform frequency of values
         df[varname + '_cat'] = pd.qcut(df[varname], nbins)
-    elif method == 'uniform':
+    elif method == 'uv': # Uniform values
         df[varname+'_cat'] = pd.cut(df[varname], nbins)
     elif method == 'linspace':
         minval = min(df[varname])
@@ -46,37 +46,35 @@ def discretize(df, varname, nbins, method='quantile'):
     elif method == 'logspace':
         minval = min(df[varname])
         maxval = max(df[varname])
-    else:
-        raise ValueError('{} not currently avaliable'.format(method))
-        
-        assert maxval > 0, 'Column {} has only negative or zero numbers'.format(varname)
-
+        assert maxval > 0, 'Column {} has only neg or zero numbers'.format(varname)
         if minval <= 0:
             print('Warning, {} has negative or zero values'.format(varname))
             minval = 0.0001
-
-        bins = np.logspace(np.log10(minval), np.log10(maxval), num = nbins+1)
-        df[varname+'_cat'] = pd.cut(df[varname], bins, include_lowest=True)
-
-
+        bins = np.logspace(np.log10(minval), np.log10(maxval), num = nbins + 1)
+        df[varname + '_cat'] = pd.cut(df[varname], bins, include_lowest = True)
+    else:
+        raise ValueError("{} not currently avaliable. Try one of the following: 'ufov','uv','linspace','logspace'.".format(method))
+                
 def gen_dummies(df, varnames, drop=True):
     '''
     Given a dataframe and certain column, returns a set of dummies
     '''
     for v in varnames:
-        binary_cols = pd.get_dummies(df[v], v)
+        dummies = pd.get_dummies(df[v], v)
         df = pd.merge(df, 
-                      binary_cols, 
+                      dummies, 
                       left_index=True, 
                       right_index=True, 
                       how='inner')
-        ## Carlos' method
-        for i, value in enumerate(df[col].unique()):
-            df[col + '_{}'.format(i)] = df[col] == value
-        ##
-    
+        ''' old method
+        for i, x in enumerate(df[v].unique()):
+            df[x + '_{}'.format(i)] = df[v] == x
+        '''
+        
     if drop:
-        df.drop(cat_cols, inplace=True, axis=1)
+        df.drop(varnames, inplace=True, axis=1)
+    
+    return df
 
 def binarize_categories(df, cat_cols, drop=True):
     '''

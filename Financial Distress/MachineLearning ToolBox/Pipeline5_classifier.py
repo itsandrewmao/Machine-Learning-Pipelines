@@ -4,6 +4,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
+#Bag,Boost,RF
+from sklearn.ensemble import BaggingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier
 
 def all_data(df, var_lst, d):
     '''
@@ -20,35 +27,45 @@ def all_data(df, var_lst, d):
     X = df[ind_vars]
     return X, Y
 
-def classify(df, features, label, method):
+def classify(df, features, label, method, bagging=False):
     '''
     Given training and testing data for independent variables (features),
     training data for dependent variable, and classifying method,
     return model, X_test, y_test
     '''
     if method == "KNN":
-        model = KNeighborsClassifier(n_neighbors=13, 
-                                     metric='minkowski', 
-                                     weights='distance')
+        model = KNeighborsClassifier(n_neighbors = 13, 
+                                     metric = 'minkowski', 
+                                     weights = 'distance')
     elif method == "Tree":
-        model = tree.DecisionTreeClassifier(max_depth = 20,
-                                            class_weight = 'balanced')
         if bagging:
             model = BaggingClassifier(model, 
                                       n_estimators = 10, 
                                       max_samples=0.65, 
                                       max_features=1.)
+        else:
+            model = tree.DecisionTreeClassifier(max_depth = 20,
+                                            class_weight = 'balanced')
+        
     elif method == "GB":
         model = GradientBoostingClassifier()
     elif method == "Logit":
-        model = LogisticRegression('l2',
-                                   C = 1,
-                                   class_weight = 'balanced')
         if bagging:
             model = BaggingClassifier(model, 
                                       n_estimators = 10, 
                                       max_samples=0.65, 
                                       max_features=1.)
+        else:
+            model = LogisticRegression('l2',
+                                       C = 1,
+                                       class_weight = 'balanced')
+    elif method == "RF":
+        model = RandomForestClassifier(n_estimators=2, 
+                                     max_features = 'sqrt', 
+                                     max_depth = 20, 
+                                     min_samples_split = 2 ,
+                                     class_weight = 'balanced')
+        
     else:
         raise ValueError('{} not currently avaliable'.format(method))
         
@@ -59,22 +76,17 @@ def classify(df, features, label, method):
                                                         X, 
                                                         test_size = 0.20,
                                                         random_state = 311)
-    ## MINJIA
+    ''' old method
     clf.fit(X_train, y_train)
     y_hat = clf.predict(X_test)
     probs = clf.predict_proba(X_test)
-    ##
+    '''
     
     model.fit(X_train, y_train)
 
     return model, X_test, y_test
 
-from sklearn.ensemble import BaggingClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import BaggingClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier
+''' Old code
 
 def bag(df, features, label, method):
     '''
@@ -135,3 +147,4 @@ def rf(df, features, label, method):
     score = rforest.score(X_test, y_test)
     
     return score
+'''
