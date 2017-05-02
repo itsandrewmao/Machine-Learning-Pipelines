@@ -16,7 +16,7 @@ def evaluate(model, X_te, y_te):
     plt.xlabel('Likelihood of Significant Financial')
     plt.ylabel('Frequency')
 
-    # We should also look at Accuracy
+    # We should also look at Acscuracy
     print("Accuracy = " + str(model.score(X_te, y_te)))
 
     # Finally -- Precision & Recall
@@ -46,3 +46,15 @@ def plot_roc(probs, y_te):
     pl.title("ROC Curve")
     pl.legend(loc="lower right")
     pl.show()
+    
+def generate_binary_at_k(y_scores, k):
+    cutoff_index = int(len(y_scores) * (k / 100.0))
+    test_predictions_binary = [1 if x < cutoff_index else 0 for x in range(len(y_scores))]
+    return test_predictions_binary
+
+def precision_at_k(y_true, y_scores, k):
+    preds_at_k = generate_binary_at_k(y_scores, k)
+    #precision, _, _, _ = metrics.precision_recall_fscore_support(y_true, preds_at_k)
+    #precision = precision[1]  # only interested in precision for label 1
+    precision = precision_score(y_true, preds_at_k)
+    return precision

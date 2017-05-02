@@ -1,22 +1,6 @@
-from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import numpy as np
 import pylab as pl
-
-def display_importance(df, label, features):
-    '''
-    Given dataframe, label, and list of features,
-    plot a graph to rank variable importance
-    '''
-    clf = RandomForestClassifier()
-    clf.fit(df[features], df[label])
-    importances = clf.feature_importances_
-    sorted_idx = np.argsort(importances)
-    padding = np.arange(len(features)) + 0.5
-    pl.barh(padding, importances[sorted_idx], align='center')
-    pl.yticks(padding, np.asarray(features)[sorted_idx])
-    pl.xlabel("Relative Importance")
-    pl.title("Variable Importance")
     
 def discretize(df, varname, nbins, method='ufov'):
     '''

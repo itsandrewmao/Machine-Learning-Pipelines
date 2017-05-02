@@ -12,32 +12,45 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier
 
-def all_data(df, var_lst, d):
+def display_importance(df, label, features, method):
     '''
-    Determine which independent variables
-    to be used in the logit regression.
-
-    Return dataframes of all available data
-    for y and x's.
+    Given dataframe, label, and list of features,
+    plot a graph to rank variable importance
     '''
-    Y = df[d['y']]
-    ind_vars = []
-    for i in var_lst:
-        ind_vars.append(d['x'+str(i)])
-    X = df[ind_vars]
-    return X, Y
+    
+    if method == "Tree":
+        model = DecisionTreeClassifier()
+    elif method == "GB":
+        model = GradientBoostingClassifier()
+    elif method == "RF":
+        model = RandomForestClassifier()
+    else:
+        raise ValueError('{} not currently avaliable'.format(method))
+        
+    model.fit(df[features], df[label])
+    importances = model.feature_importances_
+    sorted_idx = np.argsort(importances)
+    padding = np.arange(len(features)) + 0.5
+    pl.barh(padding, importances[sorted_idx], align='center')
+    pl.yticks(padding, np.asarray(features)[sorted_idx])
+    pl.xlabel("Relative Importance")
+    pl.title("Variable Importance")
 
-def classify(df, features, label, method, bagging=False):
+
+
+def classify(df, features, label, method_dict, bagging=False):
     '''
     Given training and testing data for independent variables (features),
     training data for dependent variable, and classifying method,
     return model, X_test, y_test
     '''
-    if method == "KNN":
+    m = method_dict
+    
+    if m[method] == "KNN":
         model = KNeighborsClassifier(n_neighbors = 13, 
                                      metric = 'minkowski', 
                                      weights = 'distance')
-    elif method == "Tree":
+    elif m[method] == "Tree":
         if bagging:
             model = BaggingClassifier(model, 
                                       n_estimators = 10, 
@@ -77,9 +90,9 @@ def classify(df, features, label, method, bagging=False):
                                                         test_size = 0.20,
                                                         random_state = 311)
     ''' old method
-    clf.fit(X_train, y_train)
-    y_hat = clf.predict(X_test)
-    probs = clf.predict_proba(X_test)
+    model.fit(X_train, y_train)
+    y_hat = model.predict(X_test)
+    probs = model.predict_proba(X_test)
     '''
     
     model.fit(X_train, y_train)

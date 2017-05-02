@@ -19,7 +19,7 @@ def check_miss(df):
         for x in rv:
             print(x)
 
-def fill_miss(df, varname, method):
+def fill_miss(df, varname, method='mean'):
     '''
     Fill in missing values for a given column in a dataframe
     
@@ -47,8 +47,7 @@ def convert_vartype(df, varname, method):
     assert varname in df.columns, "Column '{}' not in DataFrame".format(varname)
     
     if method == 'bool':
-        if len(df[varname].value_counts()) > 2:
-            print('Warning, {} has more than 2 values'.format(varname))
+        assert len(df[varname].value_counts()) <= 2, "{} has more than 2 values".format(varname)
     
         df[varname] = df[varname] == 1 
 
