@@ -89,8 +89,8 @@ def classify(df, features, label, method, bagging=False):
 ''' Old code
 
 def bag(df, features, label, method):
-    '''
-    '''
+    
+  
     
     if method == "Tree":
         model = DecisionTreeClassifier(max_depth = 20, 
@@ -121,8 +121,7 @@ def bag(df, features, label, method):
                                                         random_state=2)
 
 def boost(df, features, label, method):
-    '''
-    '''
+    
     AdaBoost = AdaBoostClassifier(DecisionTreeClassifier(max_depth = 1,
                                                          class_weight = 'balanced'),
                                   n_estimators=5,
@@ -134,8 +133,7 @@ def boost(df, features, label, method):
     return score
     
 def rf(df, features, label, method):
-    '''
-    '''
+    
     
     rforest = RandomForestClassifier(n_estimators=2, 
                                      max_features = 'sqrt', 
