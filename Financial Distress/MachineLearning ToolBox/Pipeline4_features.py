@@ -43,22 +43,20 @@ def gen_dummies(df, varnames, drop=True):
     '''
     Given a dataframe and certain column, returns a set of dummies
     '''
-    for v in varnames:
+    for var in varnames:
+        for i, value in enumerate(df[var].unique()):
+            df[var + '_{}'.format(i+1)] = df[var] == value
+        
+        if drop:
+            df.drop(var, inplace=True, axis=1)
+        '''
         dummies = pd.get_dummies(df[v], v)
         df = pd.merge(df, 
                       dummies, 
                       left_index=True, 
                       right_index=True, 
                       how='inner')
-        ''' old method
-        for i, x in enumerate(df[v].unique()):
-            df[x + '_{}'.format(i)] = df[v] == x
-        '''
-        
-    if drop:
-        df.drop(varnames, inplace=True, axis=1)
-    
-    return df
+        ''' 
 
 def binarize_categories(df, cat_cols, drop=True):
     '''
