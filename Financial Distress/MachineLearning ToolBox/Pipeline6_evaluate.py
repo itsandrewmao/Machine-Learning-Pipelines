@@ -1,8 +1,16 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import pylab as pl
-from sklearn.metrics import roc_curve, auc, classification_report, confusion_matrix
-
+from sklearn.metrics import (roc_curve,
+                             precision_recall_curve, 
+                             average_precision_score,
+                             accuracy_score,
+                             precision_score,
+                             recall_score,
+                             auc, 
+                             classification_report, 
+                             confusion_matrix, 
+                             f1_score)
 # credits to https://github.com/yhat/DataGotham2013/blob/master/notebooks/8%20-%20Fitting%20and%20Evaluating%20Your%20Model.ipynb
 
 def evaluate(model, X_te, y_te):

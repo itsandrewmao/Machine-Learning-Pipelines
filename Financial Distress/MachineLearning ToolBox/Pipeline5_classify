@@ -1,0 +1,102 @@
+import time
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.cross_validation import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+
+#Bag,Boost,RF
+from sklearn.ensemble import BaggingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier
+
+def display_importance(df, label, features, method):
+    '''
+    Given dataframe, label, and list of features,
+    plot a graph to rank variable importance
+    '''
+    
+    if method == "Decision Tree":
+        model = DecisionTreeClassifier()
+    elif method == "Gradient Boosting":
+        model = GradientBoostingClassifier()
+    elif method == "Random Forest":
+        model = RandomForestClassifier()
+    else:
+        raise ValueError('{} not currently avaliable'.format(method))
+        
+    model.fit(df[features], df[label])
+    importances = model.feature_importances_
+    sorted_idx = np.argsort(importances)
+    padding = np.arange(len(features)) + 0.5
+    plt.barh(padding, importances[sorted_idx], align='center')
+    plt.yticks(padding, np.asarray(features)[sorted_idx])
+    plt.xlabel("Relative Importance")
+    plt.title("Variable Importance for {}".format(method))
+
+def classify(df, X_train, y_train, method_dict):
+    '''
+    Given training and testing data for independent variables (features),
+    training data for dependent variable, and classifying method,
+    return model, X_test, y_test
+    '''
+    m = method_dict
+    
+    if m[method] == "KNN":
+        model = KNeighborsClassifier(n_neighbors = m[n_neighbors], 
+                                     metric = m[metric], 
+                                     weights = m[weights])
+        if scale:
+            min_max_scaler = preprocessing.MinMaxScaler()
+            features = min_max_scaler.fit_transform(features)
+            
+    elif m[method] == 'SVM':
+        model = SVC(kernel = m[kernel],
+                    probability = m[probability], 
+                    random_state = m[random_state])
+        
+        if scale:
+            min_max_scaler = preprocessing.MinMaxScaler()
+            features = min_max_scaler.fit_transform(features)
+        
+    elif m[method] == "Tree":
+        model = tree.DecisionTreeClassifier(max_depth = m[max_depth],
+                                            class_weight = m[class_weight])
+        if m[bagging]:
+            model = BaggingClassifier(model, 
+                                      n_estimators = m[n_estimators], 
+                                      max_samples = m[max_samples], 
+                                      max_features = m[max_features])
+    
+    elif m[method] == "Logit":
+        model = LogisticRegression('l2',
+                                   C = m[C],
+                                   class_weight = m[class_weight])
+
+        if m[bagging]:
+            model = BaggingClassifier(model, 
+                                      n_estimators = m[n_estimators], 
+                                      max_samples = m[max_samples], 
+                                      max_features = m[max_features])
+    
+    elif m[method] == "RF":
+        model = RandomForestClassifier(n_estimators = m[n_estimators], 
+                                       max_features = m[max_features], 
+                                       max_depth = m[max_depth], 
+                                       min_samples_split = m[min_samples_split],
+                                       class_weight = m[class_weight])
+        
+    else:
+        raise ValueError('{} not currently avaliable'.format(method))
+        
+    model.fit(X_train, y_train)
+
+    return model
