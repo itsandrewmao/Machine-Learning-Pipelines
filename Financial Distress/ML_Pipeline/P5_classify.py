@@ -10,7 +10,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import (RandomForestClassifier, 
                               GradientBoostingClassifier,
                               BaggingClassifier)
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
@@ -31,7 +31,7 @@ from sklearn.metrics import (roc_auc_score,
 classifiers = {'LR': LogisticRegression(),
                'KNN': KNeighborsClassifier(),
                'DT': DecisionTreeClassifier(),
-               'SVM': SVC(),
+               'SVM': LinearSVC(),
                'RF': RandomForestClassifier(),
                'GB': GradientBoostingClassifier()}
 
@@ -56,7 +56,7 @@ grid = {'LR': {'penalty': ['l1', 'l2'],
         }
 
 
-def classify(X, y, models, i, threshold, metrics):
+def classify(X, y, models, iters, threshold, metrics):
     '''
     Given a dataframe of features (X), a dataframe of the label (y), and a list 
     of models to run, an integer indicating iterations, a threshold
@@ -74,7 +74,7 @@ def classify(X, y, models, i, threshold, metrics):
                                                         test_size = 0.3, 
                                                         random_state = 5678)
         
-    # For every classifier, we try all paramter combinations possible
+    # For every classifier, we try all parameter combinations possible
     for index, clf in enumerate([classifiers[x] for x in models]):
         name = models[index]
         print("{} is running...".format(name))
@@ -94,19 +94,19 @@ def classify(X, y, models, i, threshold, metrics):
             clf.set_params(**p)
 
             # Now, we run i number of iterations
-            for run in range(i): 
+            for run in range(iters): 
                 try:
                     start_time = time.time()
                     
-                    # get the predicted results from the model
+                    # Here we get the predicted results from the model
+                    # SVC does not have 'predict_proba', so we need to use 'decision_function'
                     if hasattr(clf, 'predict_proba'):
                         yscores = clf.fit(X_train, 
                                           y_train).predict_proba(X_test)[:,1]
                     else:
                         yscores = clf.fit(X_train,
                                           y_train).decision_function(X_test)
-                    yhat = /
-                    np.asarray([1 if run >= threshold else 0 for run in yscores])
+                    yhat = np.asarray([1 if run >= threshold else 0 for run in yscores])
                     end_time = time.time()
 
                     # Finally, we can take down metrics
@@ -142,10 +142,10 @@ def select_best_models(results, models, d_metric):
     best_models = {}
     rv = {}
 
-    for model, i in results.items():
+    for model, iters in results.items():
         top_intra_metric = 0
         best_models[model] = {}
-        for params, metrics in i.items():
+        for params, metrics in iters.items():
             header = [key for key in metrics.keys()]
             if metrics[d_metric] > top_intra_metric:
                 top_intra_metric = metrics[d_metric]
@@ -192,3 +192,31 @@ def evaluate_classifier(y_test, yhat):
                 'f1': f1_score(y_test, yhat),
                 'auc': roc_auc_score(y_test, yhat)}
     return metrics
+
+def plot_precision_recall_n(y_true, y_prob, model_name):
+    '''
+    '''
+    y_score = y_prob
+    precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_score)
+    precision_curve = precision_curve[:-1]
+    recall_curve = recall_curve[:-1]
+    pct_above_per_thresh = []
+    number_scored = len(y_score)
+    for value in pr_thresholds:
+        num_above_thresh = len(y_score[y_score>=value])
+        pct_above_thresh = num_above_thresh / float(number_scored)
+        pct_above_per_thresh.append(pct_above_thresh)
+    pct_above_per_thresh = np.array(pct_above_per_thresh)
+    plt.clf()
+    fig, ax1 = plt.subplots()
+    ax1.plot(pct_above_per_thresh, precision_curve, 'b')
+    ax1.set_xlabel('percent of population')
+    ax1.set_ylabel('precision', color='b')
+    ax2 = ax1.twinx()
+    ax2.plot(pct_above_per_thresh, recall_curve, 'r')
+    ax2.set_ylabel('recall', color='r')
+    
+    name = model_name
+    plt.title(name)
+    #plt.savefig(name)
+    plt.show()

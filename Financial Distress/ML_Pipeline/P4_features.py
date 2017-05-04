@@ -1,6 +1,35 @@
 import pandas as pd
 import numpy as np
 import pylab as pl
+import matplotlib.pyplot as plt 
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import (RandomForestClassifier, 
+                              GradientBoostingClassifier)
+    
+def display_importance(df, label, features, method):
+    '''
+    Given dataframe, label, and list of features,
+    plot a graph to rank variable importance
+    '''
+    
+    if method == "Decision Tree":
+        model = DecisionTreeClassifier()
+    elif method == "Gradient Boosting":
+        model = GradientBoostingClassifier()
+    elif method == "Random Forest":
+        model = RandomForestClassifier()
+    else:
+        raise ValueError('{} not currently avaliable'.format(method))
+        
+    model.fit(df[features], df[label])
+    importances = model.feature_importances_
+    sorted_idx = np.argsort(importances)
+    padding = np.arange(len(features)) + 0.5
+    plt.barh(padding, importances[sorted_idx], align='center')
+    plt.yticks(padding, np.asarray(features)[sorted_idx])
+    plt.xlabel("Relative Importance")
+    plt.title("Variable Importance for {}".format(method))
     
 def discretize(df, varname, nbins, method='ufov'):
     '''
