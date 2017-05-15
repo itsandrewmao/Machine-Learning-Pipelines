@@ -44,8 +44,6 @@ def fill_miss(df, varname, method='mean'):
         
 def convert_vartype(df, varname, method):
     
-    assert varname in df.columns, "Column '{}' not in DataFrame".format(varname)
-    
     if method == 'bool':
         assert len(df[varname].value_counts()) <= 2, "{} has more than 2 values".format(varname)
     

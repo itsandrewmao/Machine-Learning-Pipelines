@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import pylab as pl
-import matplotlib.pyplot as plt 
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import (RandomForestClassifier, 
@@ -78,29 +77,3 @@ def gen_dummies(df, varnames, drop=True):
         
         if drop:
             df.drop(var, inplace=True, axis=1)
-        '''
-        dummies = pd.get_dummies(df[v], v)
-        df = pd.merge(df, 
-                      dummies, 
-                      left_index=True, 
-                      right_index=True, 
-                      how='inner')
-        ''' 
-
-def binarize_categories(df, cat_cols, drop=True):
-    '''
-    df: a pandas dataframe
-    cat_cols: list of column names to generate indicator columns for
-    drop: a bool. If true, drop the original category columns
-    Returns: the modified dataframe
-    '''
-    for col in cat_cols:
-        binary_cols = pd.get_dummies(df[col], col)
-        df = pd.merge(df, 
-                      binary_cols, 
-                      left_index=True, 
-                      right_index=True, 
-                      how='inner')
-    if drop:
-        df.drop(cat_cols, inplace=True, axis=1)
-    return df
